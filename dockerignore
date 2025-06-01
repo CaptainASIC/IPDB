@@ -1,0 +1,135 @@
+# IPDB - Docker Build Context Exclusions
+
+# ===================================
+# Version Control
+# ===================================
+.git
+.gitignore
+.gitattributes
+.gitmodules
+
+# ===================================
+# Documentation
+# ===================================
+README.md
+*.md
+docs/
+LICENSE
+CHANGELOG*
+
+# ===================================
+# Development Files
+# ===================================
+.vscode/
+.idea/
+*.sublime-*
+.editorconfig
+
+# ===================================
+# Testing & CI/CD
+# ===================================
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+tests/
+test_*.py
+*_test.py
+pytest.ini
+tox.ini
+.coverage
+.pytest_cache/
+htmlcov/
+
+# ===================================
+# Python Development
+# ===================================
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.tox/
+venv/
+.venv/
+env/
+.env.example
+
+# ===================================
+# Docker & Container Files
+# ===================================
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+docker-volumes/
+
+# ===================================
+# Database & Backup Files
+# ===================================
+*.sql.backup
+*.sql.gz
+*.dump
+*.backup
+backup/
+backups/
+
+# ===================================
+# Logs & Temporary Files
+# ===================================
+*.log
+logs/
+tmp/
+temp/
+.tmp/
+
+# ===================================
+# OS Generated Files
+# ===================================
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+
+# ===================================
+# Deployment Scripts
+# ===================================
+scripts/
+deploy/
+k8s/
+terraform/
+
+# ===================================
+# Local Development
+# ===================================
+.env.local
+.env.development
+local_config.py
+dev_settings.py
+
+# ===================================
+# Archive Files
+# ===================================
+*.tar
+*.tar.gz
+*.zip
+*.rar
+
+# ===================================
+# IDE Files
+# ===================================
+*.swp
+*.swo
+*~
+
+# ===================================
+# Project Specific Exclusions
+# ===================================
+
+# Keep only essential files for Docker build:
+# - app/ directory (application code)
+# - requirements.txt (Python dependencies)
+# - database/schema.sql (database schema)
+# - database/seeds/ (sample data)
+
+# Exclude everything else that's not needed in the container
+

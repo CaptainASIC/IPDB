@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ip-tracker-db
+    environment:
+      POSTGRES_DB: iptracker
+      POSTGRES_USER: iptracker
+      POSTGRES_PASSWORD: iptracker123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/seeds/sample_data.sql:/docker-entrypoint-initdb.d/02-sample_data.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - ip-tracker-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iptracker -d iptracker"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ip-tracker-app
+    environment:
+      DATABASE_URL: postgresql://iptracker:iptracker123@postgres:5432/iptracker
+      STREAMLIT_SERVER_PORT: 8501
+      STREAMLIT_SERVER_ADDRESS: 0.0.0.0
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./app:/app
+    networks:
+      - ip-tracker-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    command: ["streamlit", "run", "main.py", "--server.address", "0.0.0.0", "--server.port", "8501"]
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  ip-tracker-network:
+    driver: bridge
+
