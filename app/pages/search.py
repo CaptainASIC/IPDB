@@ -13,9 +13,44 @@ def render_search_page():
     """Render the search and browse page"""
     st.header("🔍 Search & Browse")
     
-    # Get search parameters from session state
-    selected_site = st.session_state.get('selected_site', 'ALL')
-    search_query = st.session_state.get('search_query', '')
+    # Get available sites for the dropdown
+    session = get_db_session()
+    try:
+        sites = session.query(Site.name).order_by(Site.name).all()
+        site_options = ['ALL'] + [site.name for site in sites]
+    except Exception as e:
+        st.error(f"Error loading sites: {str(e)}")
+        site_options = ['ALL']
+    finally:
+        session.close()
+    
+    # Main search interface
+    col1, col2, col3 = st.columns([2, 2, 1])
+    
+    with col1:
+        search_query = st.text_input(
+            "🔍 Search IP or Hostname",
+            value=st.session_state.get('search_query', ''),
+            placeholder="Enter IP address or hostname...",
+            key="search_input"
+        )
+    
+    with col2:
+        site_filter = st.selectbox(
+            "📍 Filter by Site",
+            options=site_options,
+            index=0 if st.session_state.get('selected_site', 'ALL') == 'ALL' else 
+                  (site_options.index(st.session_state.get('selected_site', 'ALL')) 
+                   if st.session_state.get('selected_site', 'ALL') in site_options else 0),
+            key="site_filter_search"
+        )
+    
+    with col3:
+        search_button = st.button("🔍 Search", type="primary", use_container_width=True)
+    
+    # Update session state when site filter changes
+    if site_filter != st.session_state.get('selected_site', 'ALL'):
+        st.session_state['selected_site'] = site_filter
     
     # Advanced search options
     with st.expander("🔧 Advanced Search Options"):
@@ -42,10 +77,33 @@ def render_search_page():
                 key="owner_filter"
             )
     
+    # Display active filters
+    active_filters = []
+    if site_filter != 'ALL':
+        active_filters.append(f"Site: {site_filter}")
+    if search_query:
+        active_filters.append(f"Search: {search_query}")
+    if st.session_state.get('status_filter', 'All') != 'All':
+        active_filters.append(f"Status: {st.session_state.get('status_filter')}")
+    if st.session_state.get('role_filter', ''):
+        active_filters.append(f"Role: {st.session_state.get('role_filter')}")
+    if st.session_state.get('owner_filter', ''):
+        active_filters.append(f"Owner: {st.session_state.get('owner_filter')}")
+    
+    if active_filters:
+        st.info(f"🔍 Active filters: {' | '.join(active_filters)}")
+        if st.button("🗑️ Clear All Filters"):
+            st.session_state['selected_site'] = 'ALL'
+            st.session_state['search_query'] = ''
+            st.session_state['status_filter'] = 'All'
+            st.session_state['role_filter'] = ''
+            st.session_state['owner_filter'] = ''
+            st.rerun()
+    
     # Perform search
     search_results = perform_search(
         search_query=search_query,
-        site_filter=selected_site,
+        site_filter=site_filter,
         status_filter=status_filter,
         role_filter=role_filter,
         owner_filter=owner_filter
@@ -57,7 +115,7 @@ def render_search_page():
     
     # Browse all data section
     st.markdown("---")
-    render_browse_section(selected_site)
+    render_browse_section(site_filter)
 
 def perform_search(search_query, site_filter, status_filter, role_filter, owner_filter):
     """Perform search based on provided criteria"""

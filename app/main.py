@@ -117,19 +117,6 @@ def render_sidebar_about():
     st.sidebar.markdown("## ℹ️ About")
     
     st.sidebar.markdown("""
-    **IPDB - IP Address Tracker**
-    
-    A comprehensive network management solution for tracking IP addresses, subnets, and network infrastructure across multiple sites.
-    
-    **Created by:** Captain ASIC  
-    **Repository:** [GitHub](https://github.com/CaptainASIC/IPDB)
-    
-    **Features:**
-    - Universal IP Support
-    - CIDR Notation Support
-    - Multi-site Management
-    - CSV Import/Export
-    - Dark Mode Interface
     
     ---
     
