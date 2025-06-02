@@ -114,6 +114,16 @@ def render_sidebar_stats():
 def render_sidebar_about():
     st.sidebar.markdown("""
     
+                        
+
+
+
+
+
+
+
+
+                        
     ---
     
     © 2024 Captain ASIC  
