@@ -1,5 +1,5 @@
 """
-IP Database - Main Streamlit Application
+IP Address Tracker - Main Streamlit Application
 A comprehensive tool for tracking and managing IP addresses across multiple sites
 """
 
@@ -17,7 +17,7 @@ from components.enhanced_styles import get_enhanced_css
 
 # Page configuration
 st.set_page_config(
-    page_title="IP DB",
+    page_title="IP Address Tracker",
     page_icon="🌐",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -111,6 +111,40 @@ def render_sidebar_stats():
     finally:
         session.close()
 
+def render_sidebar_about():
+    """Render sidebar about section with credits and links"""
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("## ℹ️ About")
+    
+    st.sidebar.markdown("""
+    **IPDB - IP Address Tracker**
+    
+    A comprehensive network management solution for tracking IP addresses, subnets, and network infrastructure across multiple sites.
+    
+    **Created by:** Captain ASIC  
+    **Repository:** [GitHub](https://github.com/CaptainASIC/IPDB)
+    
+    **Features:**
+    - RFC-1918 Compliant
+    - CIDR Notation Support
+    - Multi-site Management
+    - CSV Import/Export
+    - Dark Mode Interface
+    
+    ---
+    
+    © 2024 Captain ASIC  
+    Licensed under MIT License
+    """)
+    
+    # GitHub link button
+    if st.sidebar.button("🐙 View on GitHub", help="Open the IPDB repository on GitHub"):
+        st.sidebar.markdown("""
+        <script>
+        window.open('https://github.com/CaptainASIC/IPDB', '_blank');
+        </script>
+        """, unsafe_allow_html=True)
+
 def main():
     """Main application function"""
     # Initialize application
@@ -126,6 +160,7 @@ def main():
     # Render sidebar
     selected_page = render_sidebar_navigation()
     render_sidebar_stats()
+    render_sidebar_about()
     
     # Render main content based on selected page
     if selected_page == "dashboard":
@@ -184,7 +219,22 @@ def render_help_page():
     
     ### Support
     
-    For technical support or feature requests, please contact your system administrator.
+    For technical support, feature requests, or bug reports:
+    
+    - **GitHub Issues**: [Report an issue or request a feature](https://github.com/CaptainASIC/IPDB/issues)
+    - **Documentation**: Refer to this help page and the project README
+    - **Community**: Check existing issues for solutions to common problems
+    
+    **Before reporting an issue:**
+    1. Check if the issue already exists in GitHub Issues
+    2. Include your browser information and steps to reproduce
+    3. Provide relevant error messages or screenshots
+    4. Describe the expected vs actual behavior
+    
+    **Feature Requests:**
+    - Use GitHub Issues with the "enhancement" label
+    - Describe the use case and expected functionality
+    - Include any relevant examples or mockups
     """)
 
 if __name__ == "__main__":
