@@ -44,7 +44,7 @@ def get_site_list() -> List[str]:
     try:
         sites = session.query(Site).all()
         site_names = [site.name for site in sites]
-        return ['ALL'] + sorted(site_names)
+        #return ['ALL'] + sorted(site_names)
     except Exception as e:
         st.error(f"Error loading sites: {str(e)}")
         return ['ALL']
