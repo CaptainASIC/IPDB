@@ -112,24 +112,7 @@ def render_sidebar_stats():
         session.close()
 
 def render_sidebar_about():
-    """Render sidebar about section with credits and links"""
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("## ℹ️ About")
-    
     st.sidebar.markdown("""
-    **IPDB - IP Address Tracker**
-    
-    A comprehensive network management solution for tracking IP addresses, subnets, and network infrastructure across multiple sites.
-    
-    **Created by:** Captain ASIC  
-    **Repository:** [GitHub](https://github.com/CaptainASIC/IPDB)
-    
-    **Features:**
-    - RFC-1918 Compliant
-    - CIDR Notation Support
-    - Multi-site Management
-    - CSV Import/Export
-    - Dark Mode Interface
     
     ---
     
