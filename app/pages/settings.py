@@ -159,20 +159,39 @@ def render_subnets_management():
     subnets_df = get_subnets_dataframe()
     
     if not subnets_df.empty:
-        st.dataframe(
-            subnets_df.drop('ID', axis=1),
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Utilization": st.column_config.ProgressColumn(
-                    "Utilization %",
-                    help="Percentage of subnet capacity used",
-                    format="%.1f%%",
-                    min_value=0,
-                    max_value=100,
-                )
-            }
-        )
+        # Display subnets with delete buttons
+        for index, subnet in subnets_df.iterrows():
+            col1, col2, col3, col4 = st.columns([3, 2, 1, 1])
+            
+            with col1:
+                st.write(f"**{subnet['Subnet CIDR']}** - {subnet['Name']}")
+                st.caption(f"Site: {subnet['Site']} | VLAN: {subnet['VLAN ID']} | Used: {subnet['Used IPs']}/{subnet['Capacity']}")
+            
+            with col2:
+                st.write(subnet['Description'])
+            
+            with col3:
+                utilization = subnet['Utilization']
+                if utilization < 50:
+                    st.success(f"{utilization}%")
+                elif utilization < 80:
+                    st.warning(f"{utilization}%")
+                else:
+                    st.error(f"{utilization}%")
+            
+            with col4:
+                if st.button("🗑️ Delete", key=f"delete_subnet_{subnet['ID']}"):
+                    if subnet['Used IPs'] == 0:
+                        success, message = delete_subnet(subnet['ID'])
+                        if success:
+                            st.success(message)
+                            st.rerun()
+                        else:
+                            st.error(message)
+                    else:
+                        st.error(f"Cannot delete subnet with {subnet['Used IPs']} existing IP addresses")
+            
+            st.markdown("---")
     else:
         st.info("No subnets configured. Add your first subnet above.")
 
@@ -236,6 +255,41 @@ def render_ip_management():
             st.metric("Reserved IPs", reserved_ips)
     finally:
         session.close()
+    
+    # Display existing IP addresses
+    st.markdown("### 📋 Existing IP Addresses")
+    ip_addresses_df = get_ip_addresses_dataframe()
+    
+    if not ip_addresses_df.empty:
+        # Display IP addresses with delete buttons
+        for index, ip in ip_addresses_df.iterrows():
+            col1, col2, col3, col4 = st.columns([3, 2, 2, 1])
+            
+            with col1:
+                status_color = "🟢" if ip['Status'] == 'active' else "🟡" if ip['Status'] == 'reserved' else "🔴"
+                st.write(f"**{ip['IP Address']}** {status_color}")
+                st.caption(f"Site: {ip['Site']} | Hostname: {ip['Hostname']}")
+            
+            with col2:
+                st.write(f"**Role:** {ip['Role']}")
+                st.caption(f"Owner: {ip['Owner']}")
+            
+            with col3:
+                st.write(f"**Gateway:** {ip['Gateway']}")
+                st.caption(f"Description: {ip['Description']}")
+            
+            with col4:
+                if st.button("🗑️ Delete", key=f"delete_ip_{ip['ID']}"):
+                    success, message = delete_ip_address(ip['ID'])
+                    if success:
+                        st.success(message)
+                        st.rerun()
+                    else:
+                        st.error(message)
+            
+            st.markdown("---")
+    else:
+        st.info("No IP addresses configured. Add your first IP address above.")
 
 def render_system_settings():
     """Render system settings interface"""
@@ -334,6 +388,56 @@ def delete_site(site_id):
     except Exception as e:
         session.rollback()
         return False, f"Error deleting site: {str(e)}"
+    finally:
+        session.close()
+
+def delete_subnet(subnet_id):
+    """Delete a subnet from the database"""
+    session = get_db_session()
+    
+    try:
+        subnet = session.query(Subnet).filter_by(id=subnet_id).first()
+        if not subnet:
+            return False, "Subnet not found"
+        
+        # Check if subnet has any IP addresses
+        ip_count = session.query(IPAddress).filter(
+            IPAddress.site_id == subnet.site_id,
+            IPAddress.ip_cidr.op('<<')(subnet.subnet_cidr)
+        ).count()
+        
+        if ip_count > 0:
+            return False, f"Cannot delete subnet with {ip_count} existing IP addresses"
+        
+        session.delete(subnet)
+        session.commit()
+        
+        return True, f"Subnet '{subnet.subnet_cidr}' deleted successfully"
+        
+    except Exception as e:
+        session.rollback()
+        return False, f"Error deleting subnet: {str(e)}"
+    finally:
+        session.close()
+
+def delete_ip_address(ip_id):
+    """Delete an IP address from the database"""
+    session = get_db_session()
+    
+    try:
+        ip_address = session.query(IPAddress).filter_by(id=ip_id).first()
+        if not ip_address:
+            return False, "IP address not found"
+        
+        ip_cidr = str(ip_address.ip_cidr)
+        session.delete(ip_address)
+        session.commit()
+        
+        return True, f"IP address '{ip_cidr}' deleted successfully"
+        
+    except Exception as e:
+        session.rollback()
+        return False, f"Error deleting IP address: {str(e)}"
     finally:
         session.close()
 
@@ -502,6 +606,47 @@ def get_subnets_dataframe():
         
     except Exception as e:
         st.error(f"Error loading subnets: {str(e)}")
+        return pd.DataFrame()
+    finally:
+        session.close()
+
+def get_ip_addresses_dataframe():
+    """Get IP addresses data as DataFrame"""
+    session = get_db_session()
+    
+    try:
+        query = session.query(
+            IPAddress.id,
+            IPAddress.ip_cidr,
+            IPAddress.hostname,
+            IPAddress.gateway,
+            IPAddress.role,
+            IPAddress.system_owner,
+            IPAddress.description,
+            IPAddress.status,
+            Site.name.label('site_name')
+        ).join(Site)
+        
+        results = query.order_by(IPAddress.ip_cidr).all()
+        
+        data = []
+        for result in results:
+            data.append({
+                'ID': result.id,
+                'Site': result.site_name,
+                'IP Address': str(result.ip_cidr),
+                'Hostname': result.hostname or 'N/A',
+                'Gateway': str(result.gateway) if result.gateway else 'N/A',
+                'Role': result.role or 'N/A',
+                'Owner': result.system_owner or 'N/A',
+                'Description': result.description or 'N/A',
+                'Status': result.status
+            })
+        
+        return pd.DataFrame(data)
+        
+    except Exception as e:
+        st.error(f"Error loading IP addresses: {str(e)}")
         return pd.DataFrame()
     finally:
         session.close()

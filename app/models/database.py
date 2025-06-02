@@ -3,7 +3,7 @@ Database models for IP Tracker application
 Using SQLAlchemy ORM with PostgreSQL CIDR support
 """
 
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, CheckConstraint
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, CheckConstraint, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.dialects.postgresql import CIDR, INET
@@ -50,6 +50,9 @@ class IPAddress(Base):
     # Constraints
     __table_args__ = (
         CheckConstraint("status IN ('active', 'inactive', 'reserved')", name='check_status'),
+        # Unique constraint: same IP cannot exist twice at the same site
+        # but can exist at different sites (global duplicates allowed)
+        UniqueConstraint('ip_cidr', 'site_id', name='unique_ip_per_site'),
     )
     
     # Relationships
