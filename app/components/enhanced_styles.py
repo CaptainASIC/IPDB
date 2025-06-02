@@ -95,6 +95,28 @@ def get_enhanced_css():
         display: none !important;
     }
     
+    /* Target specific Streamlit navigation elements found in inspection */
+    [data-testid="stSidebarNav"],
+    [data-testid="stSidebarNavItems"],
+    [data-testid="stSidebarNavSeparator"] {
+        display: none !important;
+    }
+    
+    /* Hide the navigation list and links */
+    ul[data-testid="stSidebarNavItems"],
+    div[data-testid="stSidebarNavSeparator"],
+    a[data-testid="stSidebarNavLink"] {
+        display: none !important;
+    }
+    
+    /* Additional selectors for the navigation container */
+    .st-emotion-cache-1oe5cao,
+    .eczjsme9,
+    .st-emotion-cache-t2bj6i,
+    .eczjsme8 {
+        display: none !important;
+    }
+    
     .stApp {
         background: linear-gradient(135deg, var(--background-dark) 0%, var(--background-medium) 100%);
         color: var(--text-primary);
