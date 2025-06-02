@@ -391,6 +391,11 @@ dev_settings.py
 # Jupyter notebooks (if any are added for analysis)
 *.ipynb
 
+# Assets - exclude temporary files but keep logo
+app/assets/temp_*
+app/assets/*.tmp
+# Keep logo.png and other permanent assets
+
 # ===================================
 # CI/CD & Deployment
 # ===================================

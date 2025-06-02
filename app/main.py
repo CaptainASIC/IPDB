@@ -1,5 +1,5 @@
 """
-IP Address Tracker - Main Streamlit Application
+IP Database - Main Streamlit Application
 A comprehensive tool for tracking and managing IP addresses across multiple sites
 """
 
@@ -17,7 +17,7 @@ from components.enhanced_styles import get_enhanced_css
 
 # Page configuration
 st.set_page_config(
-    page_title="IP Address Tracker",
+    page_title="IP DB",
     page_icon="🌐",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -60,41 +60,15 @@ def render_header():
     </div>
     """, unsafe_allow_html=True)
 
-def render_top_navigation():
-    """Render the top navigation with site selector and search"""
-    col1, col2, col3 = st.columns([2, 2, 1])
-    
-    with col1:
-        st.markdown('<div class="search-container">', unsafe_allow_html=True)
-        sites = get_site_list()
-        selected_site = st.selectbox(
-            "🏢 Select Site",
-            sites,
-            key="site_selector",
-            help="Choose a site to filter results or select ALL to view all sites"
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown('<div class="search-container">', unsafe_allow_html=True)
-        search_query = st.text_input(
-            "🔍 Search IP or Hostname",
-            placeholder="Enter IP address or hostname...",
-            key="search_input",
-            help="Search for IP addresses or hostnames across the database"
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown('<div class="nav-container">', unsafe_allow_html=True)
-        if st.button("🔍 Search", key="search_button"):
-            st.session_state.perform_search = True
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    return selected_site, search_query
-
 def render_sidebar_navigation():
-    """Render sidebar navigation menu"""
+    """Render sidebar navigation menu with logo"""
+    # Display logo at the top of sidebar
+    try:
+        st.sidebar.image("assets/logo.png", width=200)
+    except:
+        # Fallback if logo not found
+        st.sidebar.markdown("## 🌐 IPDB")
+    
     st.sidebar.markdown("## 📋 Navigation")
     
     pages = {
@@ -148,13 +122,6 @@ def main():
     
     # Render header
     render_header()
-    
-    # Render top navigation
-    selected_site, search_query = render_top_navigation()
-    
-    # Store in session state for use across pages
-    st.session_state.selected_site = selected_site
-    st.session_state.search_query = search_query
     
     # Render sidebar
     selected_page = render_sidebar_navigation()
