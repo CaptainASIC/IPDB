@@ -142,6 +142,8 @@ class ImportExportManager:
     def _import_ip_addresses(self, df: pd.DataFrame, session: Session) -> int:
         """Import IP addresses to database"""
         imported_count = 0
+        # Track IPs added in this session to avoid duplicates within the same import
+        session_ips = set()
         
         for _, row in df.iterrows():
             # Get or create site
@@ -156,12 +158,16 @@ class ImportExportManager:
             if not is_valid:
                 continue
             
-            # Check if IP already exists
+            # Create a unique key for this IP
+            ip_key = (str(ip_cidr), site.id)
+            
+            # Check if IP already exists in database
             existing_ip = session.query(IPAddress).filter_by(
                 ip_cidr=ip_cidr, site_id=site.id
             ).first()
             
-            if not existing_ip:
+            # Check if already added in this session
+            if not existing_ip and ip_key not in session_ips:
                 ip_record = IPAddress(
                     site_id=site.id,
                     ip_cidr=ip_cidr,
@@ -173,31 +179,49 @@ class ImportExportManager:
                     status=row.get('status', 'active')
                 )
                 session.add(ip_record)
+                session_ips.add(ip_key)
                 imported_count += 1
+            elif existing_ip:
+                print(f"Skipping duplicate IP {ip_cidr} for site {row['site_name']} (already in database)")
+            elif ip_key in session_ips:
+                print(f"Skipping duplicate IP {ip_cidr} for site {row['site_name']} (duplicate in import file)")
         
         return imported_count
     
     def _import_sites(self, df: pd.DataFrame, session: Session) -> int:
         """Import sites to database"""
         imported_count = 0
+        # Track sites added in this session to avoid duplicates within the same import
+        session_sites = set()
         
         for _, row in df.iterrows():
-            existing_site = session.query(Site).filter_by(name=row['name']).first()
+            site_name = row['name']
             
-            if not existing_site:
+            # Check if already exists in database
+            existing_site = session.query(Site).filter_by(name=site_name).first()
+            
+            # Check if already added in this session
+            if not existing_site and site_name not in session_sites:
                 site = Site(
-                    name=row['name'],
+                    name=site_name,
                     description=row.get('description'),
                     location=row.get('location')
                 )
                 session.add(site)
+                session_sites.add(site_name)
                 imported_count += 1
+            elif existing_site:
+                print(f"Skipping duplicate site {site_name} (already in database)")
+            elif site_name in session_sites:
+                print(f"Skipping duplicate site {site_name} (duplicate in import file)")
         
         return imported_count
     
     def _import_subnets(self, df: pd.DataFrame, session: Session) -> int:
         """Import subnets to database"""
         imported_count = 0
+        # Track subnets added in this session to avoid duplicates within the same import
+        session_subnets = set()
         
         for _, row in df.iterrows():
             # Get site
@@ -205,11 +229,16 @@ class ImportExportManager:
             if not site:
                 continue
             
+            # Create a unique key for this subnet
+            subnet_key = (str(row['subnet_cidr']), site.id)
+            
+            # Check if already exists in database
             existing_subnet = session.query(Subnet).filter_by(
                 subnet_cidr=row['subnet_cidr'], site_id=site.id
             ).first()
             
-            if not existing_subnet:
+            # Check if already added in this session
+            if not existing_subnet and subnet_key not in session_subnets:
                 subnet = Subnet(
                     site_id=site.id,
                     subnet_cidr=row['subnet_cidr'],
@@ -218,7 +247,12 @@ class ImportExportManager:
                     vlan_id=row.get('vlan_id') if not pd.isna(row.get('vlan_id')) else None
                 )
                 session.add(subnet)
+                session_subnets.add(subnet_key)
                 imported_count += 1
+            elif existing_subnet:
+                print(f"Skipping duplicate subnet {row['subnet_cidr']} for site {row['site_name']} (already in database)")
+            elif subnet_key in session_subnets:
+                print(f"Skipping duplicate subnet {row['subnet_cidr']} for site {row['site_name']} (duplicate in import file)")
         
         return imported_count
     
