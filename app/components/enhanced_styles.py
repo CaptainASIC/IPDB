@@ -44,6 +44,57 @@ def get_enhanced_css():
         box-sizing: border-box;
     }
     
+    /* Hide Streamlit's default navigation menu */
+    .css-1d391kg .css-1v0mbdj {
+        display: none;
+    }
+    
+    .css-1d391kg .css-1v0mbdj.e1fqkh3o1 {
+        display: none;
+    }
+    
+    /* Hide default page navigation */
+    section[data-testid="stSidebar"] > div:first-child > div:first-child {
+        display: none;
+    }
+    
+    /* Alternative selectors for hiding default navigation */
+    .css-1d391kg .css-1v0mbdj,
+    .css-1d391kg .css-1v0mbdj.e1fqkh3o1,
+    .css-1d391kg .css-1v0mbdj.e1fqkh3o2,
+    .css-1d391kg .css-1v0mbdj.e1fqkh3o3 {
+        display: none !important;
+    }
+    
+    /* Hide any navigation list in sidebar */
+    .css-1d391kg ul[role="listbox"],
+    .css-1d391kg .css-1v0mbdj ul,
+    .css-1d391kg nav,
+    .css-1d391kg .css-1v0mbdj nav {
+        display: none !important;
+    }
+    
+    /* Hide Streamlit's automatic page navigation */
+    .css-1d391kg .css-1v0mbdj.e1fqkh3o0 {
+        display: none !important;
+    }
+    
+    /* More robust selectors for hiding default navigation */
+    [data-testid="stSidebar"] > div > div > div > div > ul,
+    [data-testid="stSidebar"] > div > div > div > ul,
+    [data-testid="stSidebar"] ul[role="listbox"],
+    [data-testid="stSidebar"] nav,
+    .css-1d391kg > div:first-child > div:first-child,
+    .css-1d391kg > div:first-child > div:first-child > div,
+    .css-1d391kg > div:first-child > div:first-child > div > div {
+        display: none !important;
+    }
+    
+    /* Hide any element that looks like default navigation */
+    .css-1d391kg > div:first-child > div:first-child > div:first-child {
+        display: none !important;
+    }
+    
     .stApp {
         background: linear-gradient(135deg, var(--background-dark) 0%, var(--background-medium) 100%);
         color: var(--text-primary);
