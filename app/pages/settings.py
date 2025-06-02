@@ -314,7 +314,7 @@ def render_system_settings():
     with st.form("app_settings_form"):
         default_status = st.selectbox("Default IP Status", ["active", "inactive", "reserved"])
         auto_cidr = st.checkbox("Auto-add /32 to single IPs", value=True)
-        validate_rfc1918 = st.checkbox("Enforce RFC-1918 private IPs only", value=True)
+        validate_all_ips = st.checkbox("Allow all IP address ranges", value=True, help="Accept both private and public IP addresses")
         
         if st.form_submit_button("Save Settings"):
             st.success("Settings saved successfully!")
@@ -492,8 +492,7 @@ def add_new_ip_address(site_id, ip_address, hostname, gateway, role, system_owne
         
         try:
             network = ipaddress.ip_network(ip_cidr, strict=False)
-            if not network.is_private:
-                return False, "Only private IP addresses (RFC-1918) are allowed"
+            # Accept all valid IP addresses (private, public, etc.)
         except ValueError:
             return False, "Invalid IP address format"
         

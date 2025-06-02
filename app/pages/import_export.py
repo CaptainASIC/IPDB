@@ -32,7 +32,7 @@ def render_import_section():
     st.markdown("""
     ### 📋 Import Guidelines
     
-    - **IP Addresses**: Must be in RFC-1918 private ranges
+    - **IP Addresses**: Must be valid IPv4 or IPv6 addresses (supports all address ranges)
     - **CIDR Notation**: Single IPs will automatically get /32 suffix
     - **Required Fields**: Vary by data type (see templates)
     - **File Format**: CSV files only
@@ -116,7 +116,7 @@ def render_import_section():
                 2. Ensure all required columns are present
                 3. Verify data formats (IP addresses, hostnames, etc.)
                 4. Check for duplicate entries
-                5. Ensure IP addresses are in RFC-1918 private ranges
+                5. Ensure IP addresses are valid IPv4 or IPv6 addresses
                 """)
         
         except Exception as e:
@@ -294,7 +294,7 @@ def render_templates_section():
     with st.expander("🌐 IP Addresses Import Guidelines"):
         st.markdown("""
         - **IP Address Format**: Can be single IP (192.168.1.10) or CIDR (192.168.1.10/32)
-        - **RFC-1918 Compliance**: Only private IP ranges allowed (10.x.x.x, 172.16-31.x.x, 192.168.x.x)
+        - **Universal IP Support**: Supports all IPv4 and IPv6 address ranges (private, public, multicast)
         - **Site Names**: Must match existing sites or will be auto-created
         - **Hostnames**: Optional, but recommended for identification
         - **Gateway**: Must be valid IP address format

@@ -112,11 +112,28 @@ def render_sidebar_stats():
         session.close()
 
 def render_sidebar_about():
+    """Render sidebar about section with credits and links"""
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("## ℹ️ About")
+    
     st.sidebar.markdown("""
-
+    **IPDB - IP Address Tracker**
+    
+    A comprehensive network management solution for tracking IP addresses, subnets, and network infrastructure across multiple sites.
+    
+    **Created by:** Captain ASIC  
+    **Repository:** [GitHub](https://github.com/CaptainASIC/IPDB)
+    
+    **Features:**
+    - Universal IP Support
+    - CIDR Notation Support
+    - Multi-site Management
+    - CSV Import/Export
+    - Dark Mode Interface
+    
     ---
     
-    © 2025 Captain ASIC  
+    © 2024 Captain ASIC  
     Licensed under MIT License
     """)
     
@@ -187,12 +204,13 @@ def render_help_page():
     3. **Add IP Addresses**: Manually add IPs or import from CSV
     4. **Search & Filter**: Use the search functionality to find specific IPs
     
-    ### RFC-1918 Compliance
+    ### Universal IP Address Support
     
-    This application follows RFC-1918 standards:
+    This application supports all IP address ranges:
     - All IP addresses are stored in CIDR notation
     - Single IP addresses are automatically converted to /32
-    - Only private IP address ranges are supported
+    - Supports private, public, multicast, and all valid IPv4/IPv6 ranges
+    - No restrictions on address space (RFC-1918, public IPs, etc.)
     
     ### Import/Export
     

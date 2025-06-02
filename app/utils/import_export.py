@@ -26,33 +26,46 @@ class ImportExportManager:
         """Validate IP address and ensure CIDR notation"""
         try:
             if '/' not in ip_str:
-                # Add /32 for single IP addresses per RFC-1918 requirement
+                # Add /32 for single IP addresses
                 ip_str = f"{ip_str}/32"
             
             # Validate CIDR notation
             network = ipaddress.ip_network(ip_str, strict=False)
             
-            # Check if it's a private IP (RFC-1918)
-            if not network.is_private:
-                return False, f"IP address {ip_str} is not a private IP address (RFC-1918)"
-            
+            # Accept all valid IP addresses (private, public, multicast, etc.)
             return True, str(network)
         except ValueError as e:
             return False, f"Invalid IP address format: {str(e)}"
     
     def validate_hostname(self, hostname: str) -> bool:
-        """Validate hostname format"""
-        if not hostname or pd.isna(hostname):
+        """Validate hostname format - flexible validation"""
+        if not hostname or pd.isna(hostname) or str(hostname).lower() in ['nan', 'none', '']:
             return True  # Hostname is optional
         
-        # Basic hostname validation
+        hostname = str(hostname).strip()
+        
+        # Basic length check
         if len(hostname) > 255:
             return False
         
-        # Check for valid characters
+        # Very permissive hostname validation
+        # Allow alphanumeric, hyphens, underscores, dots, and some special characters
         import re
-        pattern = r'^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$'
-        return bool(re.match(pattern, hostname))
+        # Allow most reasonable hostname patterns including:
+        # - Traditional hostnames (server-01, web.example.com)
+        # - Device names with underscores (switch_01)
+        # - IP addresses as hostnames
+        # - Mixed case and numbers
+        pattern = r'^[a-zA-Z0-9]([a-zA-Z0-9\-_.]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-_.]{0,61}[a-zA-Z0-9])?)*$'
+        
+        # If regex fails, try even more permissive check
+        if not re.match(pattern, hostname):
+            # Allow almost anything that's not just whitespace or special control characters
+            if len(hostname.strip()) > 0 and not any(ord(c) < 32 for c in hostname):
+                return True
+            return False
+        
+        return True
     
     def validate_import_data(self, df: pd.DataFrame, data_type: str) -> Tuple[bool, List[str]]:
         """Validate imported data format and content"""
